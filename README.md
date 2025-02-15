@@ -1,3 +1,4 @@
+
 # Apptimus - Full-Stack Posts Application
 
 ## Project Overview
@@ -83,3 +84,7 @@ Create a feature branch
 Commit changes
 Push to the branch
 Create a Pull Request
+
+# apptimus
+Full-stack post management application
+

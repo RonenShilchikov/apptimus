@@ -1,0 +1,62 @@
+version: "3.8"
+
+services:
+  mysql:
+    image: mysql:8.0
+    container_name: mysql_db
+    restart: always
+    environment:
+      MYSQL_ROOT_PASSWORD: rootpassword
+      MYSQL_DATABASE: apptimus_db
+      MYSQL_USER: apptimus
+      MYSQL_PASSWORD: 1q2w3e
+    ports:
+      - "3306:3306"
+    volumes:
+      - mysql_data:/var/lib/mysql
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost"]
+      interval: 10s
+      timeout: 5s
+      retries: 3
+
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile.dev
+    container_name: go_backend
+    depends_on:
+      mysql:
+        condition: service_healthy
+    environment:
+      DB_HOST: mysql
+      DB_USER: apptimus
+      DB_PASSWORD: 1q2w3e
+      DB_NAME: apptimus_db
+      DB_PORT: 3306     
+
+
+    ports:
+      - "8080:8080"
+    volumes:
+      - ./backend:/app
+    command: go run main.go  # Enable auto-reload during development
+
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile.dev
+    container_name: next_frontend
+    depends_on:
+      - backend
+    ports:
+      - "3000:3000"
+    environment:
+      NEXT_PUBLIC_API_URL: "http://localhost:8080"
+    volumes:
+      - ./frontend:/app
+      - /app/node_modules
+    command: npm run dev  # Enable auto-reload during development
+
+volumes:
+  mysql_data:
